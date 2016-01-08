@@ -14,14 +14,13 @@ import java.io.File;
 
 public class ApkLoopScanningService extends IntentService {
 
-    public static final String SCANING_SERVICE_STARTED = "ApkLoopScanningService";
+    public static final String SCANNING_SERVICE_STARTED = "ApkLoopScanningService";
 
     public ApkLoopScanningService() {
         super("ApkLoopScanningService");
     }
 
     public static String ACTION_SCAN = "ACTION_START_SCAN";
-    public static String ACTION_STOP = "ACTION_STOP_SCAN";
     public static String ACTION_CONTINUE = "ACTION_CONTINUE_SCAN";
 
     protected static String apksDirPath = "/sdcard/badprocess";
@@ -36,9 +35,8 @@ public class ApkLoopScanningService extends IntentService {
     }
 
     public static void stop(Context context) {
-        Intent intent = new Intent(context, ApkLoopScanningService.class);
-        intent.setAction(ACTION_STOP);
-        context.startService(intent);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        sharedPreferences.edit().putBoolean(SCANNING_SERVICE_STARTED, false).commit();
     }
 
     public static void continueProcess(Context context) {
@@ -57,8 +55,6 @@ public class ApkLoopScanningService extends IntentService {
             final String action = intent.getAction();
             if (ACTION_SCAN.equals(action)) {
                 this.handleStartAction();
-            } else if (ACTION_STOP.equals(action)) {
-                this.handleStopAction();
             } else if (ACTION_CONTINUE.equals(action)) {
                 this.handleProcessAction();
             }
@@ -66,16 +62,12 @@ public class ApkLoopScanningService extends IntentService {
     }
 
     protected void handleStartAction() {
-        this.sharedPreferences.edit().putBoolean(SCANING_SERVICE_STARTED, true).commit();
+        this.sharedPreferences.edit().putBoolean(SCANNING_SERVICE_STARTED, true).commit();
         continueProcess(this);
     }
 
-    protected void handleStopAction() {
-        this.sharedPreferences.edit().putBoolean(SCANING_SERVICE_STARTED, false).commit();
-    }
-
     protected void handleProcessAction() {
-        boolean started = this.sharedPreferences.getBoolean(SCANING_SERVICE_STARTED, false);
+        boolean started = this.sharedPreferences.getBoolean(SCANNING_SERVICE_STARTED, false);
         while(started) {
             File apkDir = new File(apksDirPath);
             if (!apkDir.exists() || !apkDir.isDirectory()) return;
@@ -85,6 +77,7 @@ public class ApkLoopScanningService extends IntentService {
 
                 this.scanApk(file);
             }
+            started = this.sharedPreferences.getBoolean(SCANNING_SERVICE_STARTED, false);
         }
     }
 

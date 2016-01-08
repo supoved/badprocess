@@ -20,9 +20,16 @@
         </activity>
 
         <service
-            android:name=".ApkScaningService"
-            android:exported="false">
-        </service>
+            android:name=".ApkScanningService"
+            android:exported="false"/>
+
+        <service
+            android:name=".ApkLoopScanningService"
+            android:exported="false"/>
+
+        <service
+            android:name=".ApkMovingService"
+            android:exported="false"/>
     </application>
 
 </manifest>

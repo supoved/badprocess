@@ -11,18 +11,16 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FilenameFilter;
 
-public class ApkScaningService extends IntentService {
+public class ApkScanningService extends IntentService {
 
-    public static final String SCANING_SERVICE_STARTED = "ApkScaningService_started";
+    public static final String SCANNING_SERVICE_STARTED = "ApkScaningService_started";
 
-    public ApkScaningService() {
-        super("ApkScaningService");
+    public ApkScanningService() {
+        super("ApkScanningService");
     }
 
     public static String ACTION_SCAN = "ACTION_START_SCAN";
-    public static String ACTION_STOP = "ACTION_STOP_SCAN";
     public static String ACTION_CONTINUE = "ACTION_CONTINUE_SCAN";
 
     protected static String apksDirPath = "/sdcard/badprocess";
@@ -31,19 +29,18 @@ public class ApkScaningService extends IntentService {
     protected Vibrator vibrator;
 
     public static void start(Context context) {
-        Intent intent = new Intent(context, ApkScaningService.class);
+        Intent intent = new Intent(context, ApkScanningService.class);
         intent.setAction(ACTION_SCAN);
         context.startService(intent);
     }
 
     public static void stop(Context context) {
-        Intent intent = new Intent(context, ApkScaningService.class);
-        intent.setAction(ACTION_STOP);
-        context.startService(intent);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        sharedPreferences.edit().putBoolean(SCANNING_SERVICE_STARTED, false).commit();
     }
 
     public static void continueProcess(Context context) {
-        Intent intent = new Intent(context, ApkScaningService.class);
+        Intent intent = new Intent(context, ApkScanningService.class);
         intent.setAction(ACTION_CONTINUE);
         context.startService(intent);
     }
@@ -58,8 +55,6 @@ public class ApkScaningService extends IntentService {
             final String action = intent.getAction();
             if (ACTION_SCAN.equals(action)) {
                 this.handleStartAction();
-            } else if (ACTION_STOP.equals(action)) {
-                this.handleStopAction();
             } else if (ACTION_CONTINUE.equals(action)) {
                 this.handleProcessAction();
             }
@@ -67,16 +62,12 @@ public class ApkScaningService extends IntentService {
     }
 
     protected void handleStartAction() {
-        this.sharedPreferences.edit().putBoolean(SCANING_SERVICE_STARTED, true).commit();
+        this.sharedPreferences.edit().putBoolean(SCANNING_SERVICE_STARTED, true).commit();
         continueProcess(this);
     }
 
-    protected void handleStopAction() {
-        this.sharedPreferences.edit().putBoolean(SCANING_SERVICE_STARTED, false).commit();
-    }
-
     protected void handleProcessAction() {
-        boolean started = this.sharedPreferences.getBoolean(SCANING_SERVICE_STARTED, false);
+        boolean started = this.sharedPreferences.getBoolean(SCANNING_SERVICE_STARTED, false);
         if (!started) return;
 
         File apkDir = new File(apksDirPath);
@@ -88,7 +79,6 @@ public class ApkScaningService extends IntentService {
             this.scanApk(file);
         }
 
-        this.vibrator.vibrate(30);
         continueProcess(this);
         continueProcess(this);
     }
