@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             ApkScaningService.start(MainActivity.this);
+            ApkLoopScanningService.start(MainActivity.this);
         }
     };
 
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             ApkScaningService.stop(MainActivity.this);
+            ApkLoopScanningService.stop(MainActivity.this);
         }
     };
 }
